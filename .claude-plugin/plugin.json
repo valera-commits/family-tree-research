@@ -1,0 +1,8 @@
+{
+  "name": "family-tree-research",
+  "version": "1.0.0",
+  "description": "Поиск предков по архивам Российской империи, СССР и Украины и интерактивный «веер предков» с хроникой рода в одном HTML-файле",
+  "author": {"name": "valera-commits"},
+  "license": "MIT",
+  "keywords": ["genealogy", "family-tree", "archives", "генеалогия", "родословная"]
+}

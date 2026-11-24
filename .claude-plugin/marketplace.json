@@ -1,0 +1,11 @@
+{
+  "name": "family-tree-research",
+  "owner": {"name": "valera-commits"},
+  "plugins": [
+    {
+      "name": "family-tree-research",
+      "source": "./",
+      "description": "Поиск предков по архивам и интерактивный веер предков с хроникой рода"
+    }
+  ]
+}

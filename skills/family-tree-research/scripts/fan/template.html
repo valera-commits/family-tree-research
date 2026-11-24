@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Веер предков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f5efe2;--ink:#2b2420;--muted:#7b6e60;--line:#ddd0b6;--card:#fbf7ee}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"PT Sans",system-ui,sans-serif}
+.wrap{max-width:1700px;margin:0 auto;padding:26px 16px 36px}
+header{text-align:center}
+.eyebrow{text-transform:uppercase;letter-spacing:.3em;font-size:12px;color:var(--muted)}
+h1{font-family:"Cormorant Garamond",serif;font-weight:700;font-size:clamp(36px,5vw,70px);line-height:1;margin:.12em 0 .06em}
+.sub{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:clamp(17px,1.9vw,24px);color:var(--muted);margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:14px 0 0;min-height:34px}
+.crumb{font-size:14px;color:var(--muted)}
+.crumb button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+.crumb button:hover,.btn:hover{border-color:#b9a98a;background:#fff}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:hover{background:#463b33}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:26px;align-items:start;margin-top:4px}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}}
+#fan{width:100%;height:auto;display:block;touch-action:manipulation}
+#fan text{fill:var(--ink);font-family:"PT Sans",sans-serif;pointer-events:none}
+#fan .n{font-weight:700}
+#fan .s{font-family:"Cormorant Garamond",serif;font-weight:700;font-size:1.22em}
+#fan .p{font-style:italic;fill:#4b4037;font-size:.9em}
+#fan .an{font-family:"Cormorant Garamond",serif;font-weight:700}
+#fan .ay{fill:#3d342d}
+#fan .cell{stroke:var(--paper);stroke-width:2.5;cursor:pointer;transition:fill-opacity .15s}
+#fan .cell:hover{fill-opacity:.95!important}
+#fan .cell.sel{stroke:var(--ink);stroke-width:3.5}
+#fan .empty{fill:#e9dfca;stroke:var(--paper);stroke-width:2.5}
+#fan .dash{fill:none;stroke:#2b2420;stroke-opacity:.4;stroke-width:1.2;stroke-dasharray:5 4;pointer-events:none}
+#fan .more{fill:var(--ink);fill-opacity:.55;pointer-events:none}
+#fan .cam{fill:var(--paper);stroke:var(--ink);stroke-opacity:.5;pointer-events:none}
+#fan .side{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:24px;fill:var(--muted)}
+#fan .hub{cursor:pointer}
+#fan .c1{fill:var(--paper);font-family:"Cormorant Garamond",serif;font-weight:700}
+#fan .c2{fill:var(--paper);font-family:"Cormorant Garamond",serif;letter-spacing:.06em}
+#fan .c3{fill:#c9b48a}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;position:sticky;top:14px}
+.card .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.card h2{font-family:"Cormorant Garamond",serif;font-size:34px;line-height:1.02;margin:6px 0 2px}
+.card .sur{font-family:"Cormorant Garamond",serif;font-size:24px;color:#5a4d42}
+.card .meta{margin:8px 0 0;color:var(--muted);font-size:14px}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;margin-top:10px}
+.tag.d{background:#2b7a4b1c;color:#2b6a44}.tag.f{background:#9a3f311a;color:#8a3a2d}
+.hero{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin:14px 0 4px}
+.hero figure{margin:0;cursor:zoom-in}
+.hero img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:12px;display:block;background:#e9dfca;filter:sepia(.15)}
+.hero figcaption{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.3}
+.card p{font-size:15px;line-height:1.5;margin:10px 0 0}
+.card h3{font-family:"Cormorant Garamond",serif;font-size:21px;margin:16px 0 6px}
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.docs figure{margin:0;cursor:zoom-in}
+.docs img{width:100%;height:92px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block}
+.docs figcaption{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.25}
+.rel{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.rel .btn{font-size:13px;padding:5px 12px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 24px;list-style:none;padding:0;margin:4px 0 0}
+.legend li{display:grid;grid-template-columns:16px 1fr;column-gap:10px}
+.legend i{width:16px;height:16px;border-radius:4px;margin-top:4px}
+.legend b{font-family:"Cormorant Garamond",serif;font-size:20px}
+.legend span{grid-column:2;color:var(--muted);font-size:13px}
+.howto{font-size:13.5px;color:#4b4037;margin-top:16px;line-height:1.5}
+.key{display:inline-block;width:22px;height:12px;vertical-align:-1px;margin:0 5px 0 12px;border-radius:3px}
+.k1{background:#9a3f3199}.k2{background:#9a3f3133;outline:1.3px dashed #2b242099;outline-offset:-3px}.k3{background:#e9dfca}
+#lb{position:fixed;inset:0;background:rgba(20,16,13,.88);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;padding:20px}
+#lb.on{display:flex}
+#lb img{max-width:96vw;max-height:84vh;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#lb div{color:#eee;margin-top:10px;font-size:14px;text-align:center;max-width:900px}
+#lb button{position:absolute;top:14px;right:18px;font-size:28px;background:none;border:0;color:#fff;cursor:pointer}
+
+#chron{margin-top:34px;border-top:1px solid var(--line);padding-top:22px}
+#chron h2{font-family:"Cormorant Garamond",serif;font-size:clamp(30px,3.4vw,46px);margin:0;text-align:center}
+#chron .lead{text-align:center;color:var(--muted);margin:4px 0 14px;font-style:italic;font-family:"Cormorant Garamond",serif;font-size:19px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;cursor:pointer;color:var(--ink)}
+.chip.off{opacity:.38;text-decoration:line-through}
+.chip i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}
+#track{width:100%;height:auto;display:block;margin:10px 0 4px}
+#track .lane{font-family:"Cormorant Garamond",serif;font-weight:700;font-size:15px;fill:var(--ink)}
+#track .lk{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+#track .lk:hover{fill:#9a3f31}
+.legend li{cursor:pointer;border-radius:10px;padding:4px 6px}
+.legend li:hover,.legend li.on{background:#fff9}
+.legend li.on{outline:2px solid #c9b48a}
+.surbtn{all:unset;cursor:pointer;font-family:"Cormorant Garamond",serif;font-size:22px;color:#5a4d42;border-bottom:1px dotted #a89880}
+.surbtn:hover{color:#9a3f31}
+#track .tick{font-size:12px;fill:var(--muted);font-family:"PT Sans",sans-serif}
+#track .ev{cursor:pointer;transition:transform .12s}
+#track .ev:hover{transform:scale(1.5)}
+.events{list-style:none;margin:16px auto 0;padding:0;max-width:980px}
+.events li.dec{font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:700;color:#8a7a66;margin:18px 0 4px;border-bottom:1px solid var(--line)}
+.events li.ev{display:grid;grid-template-columns:86px 26px 1fr;gap:10px;align-items:start;padding:7px 8px;border-radius:10px;cursor:pointer}
+.events li.ev:hover,.events li.ev.hi{background:#fff8}
+.events li.ev.hi{outline:2px solid #c9b48a}
+.events .yr{font-family:"Cormorant Garamond",serif;font-size:22px;font-weight:700;line-height:1}
+.events .dt{display:block;font-family:"PT Sans";font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}
+.events .ic{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;margin-top:1px}
+.events .tx{font-size:15px;line-height:1.4}
+.events .who{display:inline-block;margin-left:6px;font-size:12px;color:var(--muted);border-bottom:1px dotted var(--muted)}
+.events .ap{color:var(--muted);font-size:12px}
+footer{margin-top:20px;text-align:center;color:var(--muted);font-size:12.5px}
+</style></head>
+<body><div class="wrap">
+<header><div class="eyebrow" id="eyebrow"></div>
+<h1 id="title"></h1>
+<p class="sub" id="subtitle"></p></header>
+<div class="bar" id="bar"></div>
+<div class="grid">
+<div><svg id="fan" viewBox="0 0 2120 1640" role="img" aria-label="Веер предков"></svg>
+<ul class="legend" id="legend"></ul>
+<div class="howto"><span class="key k1" style="margin-left:0"></span>подтверждено документом <span class="key k2"></span>по семейным сведениям или отчеству <span class="key k3"></span>ещё не найден
+&nbsp;·&nbsp; ◉ – есть фото или документ &nbsp;·&nbsp; лучи – самые ранние поколения (дальше 6-го колена)</div></div>
+<aside class="card" id="card"></aside>
+</div>
+<section id="chron"><h2>Хроника рода</h2><p class="lead">Кто когда рождался, женился, переезжал, служил и умирал – по всем линиям</p>
+<div class="filters" id="ftype"></div><div class="filters" id="fline"></div>
+<svg id="track" role="img" aria-label="События по годам"></svg>
+<ol class="events" id="events"></ol></section>
+<footer id="foot"></footer>
+</div>
+<div id="lb" role="dialog" aria-modal="true"><button aria-label="Закрыть">×</button><img alt=""><div></div></div>
+<script>
+const D=/*DATA*/null, IMGS=/*IMGS*/null;
+const NS="http://www.w3.org/2000/svg";
+const CX=1060, CY=1000, SPAN=236, START=-SPAN/2, R0=112, RW=[0,92,122,138,150,158,150], GENS=6;
+const CFG=/*CFG*/null;
+const LINEINFO=CFG.lines; // {key:{name,c,sub,p:[...],prefixes:[...]}}
+function lineOfPath(p){let best=null,bl=-1;for(const k in LINEINFO)for(const pre of LINEINFO[k].prefixes||[])if(p.startsWith(pre)&&pre.length>bl){best=k;bl=pre.length}return best}
+let lineSel=null;
+let root="", sel="";
+const colour=p=>{const L=lineOfPath(p);return L?LINEINFO[L].c:"#6f6257"};
+const rIn=g=>R0+RW.slice(1,g).reduce((a,b)=>a+b,0), rOut=g=>R0+RW.slice(1,g+1).reduce((a,b)=>a+b,0);
+const pt=(r,a)=>{const t=a*Math.PI/180;return[CX+r*Math.sin(t),CY-r*Math.cos(t)]};
+let BB;function bb(x,y){BB[0]=Math.min(BB[0],x);BB[1]=Math.min(BB[1],y);BB[2]=Math.max(BB[2],x);BB[3]=Math.max(BB[3],y)}
+function wedge(r1,r2,a0,a1){const[x1,y1]=pt(r1,a0),[x2,y2]=pt(r2,a0),[x3,y3]=pt(r2,a1),[x4,y4]=pt(r1,a1),L=a1-a0>180?1:0;for(let a=a0;a<=a1+.01;a+=Math.max(1,(a1-a0)/8)){const[x,y]=pt(r2,a);bb(x,y)}bb(x1,y1);bb(x4,y4);
+ return `M${x1},${y1}L${x2},${y2}A${r2},${r2} 0 ${L} 1 ${x3},${y3}L${x4},${y4}A${r1},${r1} 0 ${L} 0 ${x1},${y1}Z`}
+function ang(rel){const g=rel.length;const idx=g?parseInt(rel.replace(/F/g,"0").replace(/M/g,"1"),2):0;const st=SPAN/2**g;return[START+idx*st,START+(idx+1)*st]}
+const el=(t,a={},txt)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e};
+const hasAnc=p=>(p+"F") in D||(p+"M") in D;
+const RAYW=136, RAYGAP=10;
+function geom(p){const rel=p.slice(root.length),g=rel.length;
+ if(g<=GENS){const[a0,a1]=ang(rel);return{g,a0,a1,r1:rIn(g),r2:rOut(g)}}
+ const pre=root+rel.slice(0,4),[b0,b1]=ang(rel.slice(0,4));
+ const same=Object.keys(D).filter(k=>k.startsWith(pre)&&k.length===p.length).sort(), n=same.length, i=same.indexOf(p);
+ const r1=rOut(GENS)+RAYGAP+(g-GENS-1)*RAYW;
+ return{g,a0:b0+(b1-b0)*i/n,a1:b0+(b1-b0)*(i+1)/n,r1,r2:r1+RAYW-4,ray:true}}
+const deepest=p=>{let m=0;for(const k in D)if(k.startsWith(p))m=Math.max(m,k.length-p.length);return m};
+const genWord=n=>["","родители","дедушки и бабушки","прадеды","прапрадеды"][n]||`${n}-е колено`;
+function relName(p){ // relation to the person in the centre
+ const g=p.length; if(!g)return CFG.rootLabel||"В центре веера"; const male=p.endsWith("F");
+ const side=g>1?(p[0]==="F"?" по отцу":" по матери"):"";
+ if(g>=5)return (male?"предок":"прародительница")+` в ${g}-м поколении`+side;
+ const base=g===1?(male?"отец":"мать"):g===2?(male?"дед":"бабушка"):(("пра".repeat(g-2))+(male?"дед":"бабушка"));
+ return base+side;}
+function draw(){
+ const svg=document.getElementById("fan"); svg.innerHTML=""; BB=[CX-R0,CY-R0,CX+R0,CY+R0];
+ const defs=el("defs"); svg.appendChild(defs);
+ for(let g=1;g<=GENS;g++)for(let i=0;i<2**g;i++){
+  const rel=i.toString(2).padStart(g,"0").replace(/0/g,"F").replace(/1/g,"M"), p=root+rel;
+  if(p in D||!((root+rel.slice(0,-1)) in D))continue;
+  const[a0,a1]=ang(rel); svg.appendChild(el("path",{d:wedge(rIn(g),rOut(g),a0,a1),class:"empty"}));}
+ for(const p in D){
+  if(!p.startsWith(root))continue; const G=geom(p), g=G.g; if(g<1)continue;
+  const d=D[p],a0=G.a0,a1=G.a1,r1=G.r1,r2=G.r2,op=[0,.62,.55,.5,.42,.36,.3][g]||.32;
+  const dim=lineSel&&lineOfPath(p)!==lineSel; const cell=el("path",{d:wedge(r1,r2,a0,a1),fill:colour(p),"fill-opacity":dim?op*.22:op,class:"cell"+(p===sel?" sel":""),tabindex:0,role:"button","aria-label":`${d.g} ${d.s}`});
+  cell.addEventListener("click",()=>select(p)); cell.addEventListener("keydown",e=>{if(e.key==="Enter")select(p)});
+  svg.appendChild(cell);
+  if(d.c!=="d"){const pad=Math.max(.25,.6*(7-g)/6+.25);svg.appendChild(el("path",{d:wedge(r1+5,r2-5,a0+pad,a1-pad),class:"dash"}))}
+  const am=(a0+a1)/2, rm=(r1+r2)/2;
+  if(d.ph.length||d.dc.length){const[x,y]=pt(r2-(g<=2?14:10),a1-(g<=2?3:Math.min(1.6,(a1-a0)/5)));svg.appendChild(el("circle",{cx:x,cy:y,r:g<=3?6:4.5,class:"cam"}))}
+  if(g<=2){
+   const rows=g===1?[[`${d.g} ${d.s}`.trim(),"an",.18,27],[[d.y,d.p].filter(Boolean).join(" · "),"ay",-.22,15]]
+     :[[d.g,"an",.24,19],[d.s,"an",-.02,19],[[d.y,d.p].filter(Boolean).join(" · "),"ay",-.27,13.5]];
+   rows.forEach(([txt,cls,off,fs],k)=>{if(!txt)return;const rr=rm+off*(r2-r1)+8,pad=g===1?3:4;const[xa,ya]=pt(rr,a0+pad),[xb,yb]=pt(rr,a1-pad);
+    const id=`a${p}${k}`;defs.appendChild(el("path",{id,d:`M${xa},${ya}A${rr},${rr} 0 0 1 ${xb},${yb}`}));
+    const t=el("text",{class:cls,style:`font-size:${fs}px`,opacity:dim?.3:1});const tp=el("textPath",{href:"#"+id,startOffset:"50%","text-anchor":"middle"},txt);t.appendChild(tp);svg.appendChild(t)});
+   continue}
+  let lines=[[d.g,"n"],[d.s,"s"],[d.y,"y"],[d.p,"p"]].filter(l=>l[0]);
+  const tang=(a1-a0)*Math.PI/180*rm, radial=r2-r1-16;
+  let fs={3:17,4:15.5,5:13.5,6:12}[g]||15; const longest=Math.max(...lines.map(([t,c])=>t.length*(c==="s"?1.08:1)));
+  fs=Math.min(fs,radial/(longest*.56)); while(lines.length*fs*1.2>tang-6&&lines.length>2)lines.pop();
+  fs=Math.min(fs,(tang-6)/(lines.length*1.2)); const lh=fs*1.2,n=lines.length, rot=am>=0?am-90:am+90, [x,y]=pt(rm,am);
+  const gg=el("g",{transform:`translate(${x},${y}) rotate(${rot})`,opacity:dim?.3:1}); const t=el("text",{"text-anchor":"middle",style:`font-size:${fs}px`});
+  lines.forEach(([s,c],i)=>t.appendChild(el("tspan",{class:c,x:0,y:-(n-1)*lh/2+i*lh+fs*.36},s))); gg.appendChild(t); svg.appendChild(gg);
+ }
+ const[lx,ly]=pt(rOut(6)+40,-95),[rx,ry]=pt(rOut(6)+40,95);
+ svg.appendChild(el("text",{x:lx,y:ly,class:"side","text-anchor":"middle"},"по отцу"));
+ svg.appendChild(el("text",{x:rx,y:ry,class:"side","text-anchor":"middle"},"по матери"));
+ const d=D[root], hub=el("g",{class:"hub",tabindex:0,role:"button"}); hub.addEventListener("click",()=>select(root));
+ hub.appendChild(el("circle",{cx:CX,cy:CY,r:R0-6,fill:"#2b2420"}));
+ hub.appendChild(el("circle",{cx:CX,cy:CY,r:R0-14,fill:"none",stroke:"#c9b48a","stroke-width":1.2}));
+ const parts=d.g.split(" "); const first=parts[0], pat=parts.slice(1).join(" ");
+ hub.appendChild(el("text",{x:CX,y:CY-(pat?26:10),"text-anchor":"middle",class:"c1",style:`font-size:${first.length>9?26:32}px`},first));
+ if(pat)hub.appendChild(el("text",{x:CX,y:CY+2,"text-anchor":"middle",class:"c2",style:`font-size:${pat.length>12?15:18}px`},pat));
+ hub.appendChild(el("text",{x:CX,y:CY+(pat?28:20),"text-anchor":"middle",class:"c2",style:"font-size:17px"},d.s.split(" ")[0]||""));
+ if(d.y)hub.appendChild(el("text",{x:CX,y:CY+52,"text-anchor":"middle",class:"c3",style:"font-size:15px"},d.y));
+ svg.appendChild(hub);
+ const pad=50; BB[0]=Math.min(BB[0],lx-90);BB[2]=Math.max(BB[2],rx+90);
+ svg.setAttribute("viewBox",`${BB[0]-pad} ${BB[1]-pad} ${BB[2]-BB[0]+2*pad} ${BB[3]-BB[1]+2*pad}`);
+ // breadcrumb
+ const bar=document.getElementById("bar"); bar.innerHTML="";
+ if(lineSel){const b=document.createElement("button");b.className="btn";b.textContent=`✕ Снять выделение: ${LINEINFO[lineSel].name}`;b.onclick=()=>showLine(null);bar.appendChild(b)}
+ if(root){const b=document.createElement("button");b.className="btn primary";b.textContent=`↩ Вернуться к ${D[""].g.split(" ")[0]}`;b.onclick=()=>{setRoot("");select("")};bar.appendChild(b);
+  const c=document.createElement("span");c.className="crumb";c.append(" В центре: ");
+  for(let k=1;k<root.length;k++){const q=root.slice(0,k);const bb=document.createElement("button");bb.textContent=D[q].g.split(" ")[0];bb.title=relName(q);bb.onclick=()=>{setRoot(q);select(q)};c.append(bb," › ")}
+  const me=document.createElement("b");me.textContent=D[root].g;c.append(me);bar.appendChild(c)}
+ else{const c=document.createElement("span");c.className="crumb";c.textContent=`В центре ${D[""].g.split(" ")[0]} · на веере ${deepest("")} поколений предков; дальше 6-го колена – лучами`;bar.appendChild(c)}
+}
+function setRoot(p){root=p;draw()}
+function fig(cls,[f,cap]){const fg=document.createElement("figure");const im=document.createElement("img");im.src=IMGS[f];im.alt=cap;im.loading="lazy";
+ const fc=document.createElement("figcaption");fc.textContent=cap;fg.append(im,fc);fg.onclick=()=>openLB(f,cap);return fg}
+function select(p){
+ sel=p; const d=D[p], card=document.getElementById("card"); card.innerHTML="";
+ const k=document.createElement("div");k.className="kicker";k.textContent=relName(p);
+ const h=document.createElement("h2");h.textContent=d.g; card.append(k,h);
+ if(d.s||p.length){const s=document.createElement("button");s.className="sur surbtn";const L=lineOfPath(p);s.textContent=(d.s||"")+(L?`  · линия ${LINEINFO[L].name} ›`:"");s.title="Открыть линию";s.onclick=()=>showLine(L);card.append(s)}
+ const meta=[d.y,d.p].filter(Boolean).join(" · "); if(meta){const m=document.createElement("div");m.className="meta";m.textContent=meta;card.append(m)}
+ const t=document.createElement("span");t.className="tag "+d.c;t.textContent=d.c==="d"?"подтверждено документом":"по семейным сведениям или отчеству";card.append(t);
+ if(d.ph.length){const g=document.createElement("div");g.className="hero";d.ph.forEach(x=>g.append(fig("hero",x)));card.append(g)}
+ (d.n||[]).forEach(s=>{const q=document.createElement("p");q.textContent=s;card.append(q)});
+ if(d.dc.length){const h3=document.createElement("h3");h3.textContent="Документы";const g=document.createElement("div");g.className="docs";d.dc.forEach(x=>g.append(fig("docs",x)));card.append(h3,g)}
+ const rel=document.createElement("div");rel.className="rel";
+ if(hasAnc(p)&&p!==root){const b=document.createElement("button");b.className="btn primary";b.textContent=`Показать его предков (ещё ${deepest(p)} пок.)`;if(p.endsWith("M"))b.textContent=`Показать её предков (ещё ${deepest(p)} пок.)`;if(!p)b.textContent="Показать предков";b.onclick=()=>{setRoot(p);select(p)};rel.append(b)}
+ for(const[c,lab]of[["F","Отец"],["M","Мать"]]){const q=p+c;if(q in D){const b=document.createElement("button");b.className="btn";b.textContent=`${lab}: ${D[q].g}`;b.onclick=()=>{if(q.length-root.length>GENS)setRoot(p);select(q)};rel.append(b)}}
+ if(p){const q=p.slice(0,-1);const b=document.createElement("button");b.className="btn";b.textContent=`Ребёнок: ${D[q].g}`;b.onclick=()=>{if(q.length<root.length)setRoot(q);select(q)};rel.append(b)}
+ card.append(rel);
+ document.querySelectorAll("#fan .cell.sel").forEach(e=>e.classList.remove("sel")); draw();
+ if(window.innerWidth<1050&&p!==""&&window.event&&window.event.type==="click")card.scrollIntoView({behavior:"smooth",block:"start"});
+}
+const lb=document.getElementById("lb");
+function openLB(f,cap){lb.querySelector("img").src=IMGS[f];lb.querySelector("div").textContent=cap;lb.classList.add("on")}
+lb.onclick=e=>{if(e.target.tagName!=="IMG")lb.classList.remove("on")}; document.addEventListener("keydown",e=>{if(e.key==="Escape")lb.classList.remove("on")});
+document.getElementById("legend").innerHTML=Object.entries(LINEINFO).map(([k,v])=>`<li data-l="${k}" tabindex="0" role="button"><i style="background:${v.c}"></i><b>${v.name}</b><span>${v.sub}</span></li>`).join("");
+document.querySelectorAll("#legend li").forEach(li=>{li.onclick=()=>showLine(li.dataset.l);li.onkeydown=e=>{if(e.key==="Enter")showLine(li.dataset.l)}});
+function showLine(k){
+ lineSel=k; offL.clear(); if(k)for(const[l]of LANES)if(l!==k)offL.add(l); chron();
+ document.querySelectorAll("#legend li").forEach(li=>li.classList.toggle("on",li.dataset.l===k));
+ if(!k){select(sel);return}
+ setRoot(""); const v=LINEINFO[k], card=document.getElementById("card"); card.innerHTML="";
+ const kk=document.createElement("div");kk.className="kicker";kk.textContent="Линия рода";
+ const h=document.createElement("h2");h.textContent=v.name;h.style.color=v.c;
+ const sb=document.createElement("div");sb.className="meta";sb.textContent=v.sub; card.append(kk,h,sb);
+ v.p.forEach(t=>{const q=document.createElement("p");q.textContent=t;card.append(q)});
+ const mem=Object.keys(D).filter(p=>lineOfPath(p)===k).sort((a,b)=>b.length-a.length||a.localeCompare(b));
+ const h3=document.createElement("h3");h3.textContent=`Люди линии · ${mem.length}`;card.append(h3);
+ const box=document.createElement("div");box.className="rel";box.style.marginTop="4px";
+ mem.forEach(p=>{const b=document.createElement("button");b.className="btn";const d=D[p];b.textContent=`${d.g}${d.y?" · "+d.y:""}`;b.title=relName(p);b.onclick=()=>select(p);box.append(b)});
+ card.append(box);
+ const ev=EV.filter(e=>laneOf(e)===k).length; const n=document.createElement("p");n.className="meta";n.textContent=`В хронике ниже оставлены только события этой линии (${ev}). Снять выделение – кнопка над веером.`;card.append(n);
+ draw();
+}
+document.getElementById("eyebrow").textContent=CFG.eyebrow||"";document.getElementById("title").textContent=CFG.title||"Веер предков";document.getElementById("subtitle").textContent=CFG.subtitle||"";document.getElementById("foot").textContent=CFG.footer||"";document.title=CFG.title||"Веер предков";
+draw(); select("");
+const EV=/*EV*/null;
+const TYPES={birth:["Рождения","●","#3f7a52"],marriage:["Браки","∞","#b07a24"],death:["Смерти","✝","#4a3f38"],move:["Переезды","→","#2c5a7c"],service:["Служба и работа","★","#6b5b95"],repr:["Репрессии","!","#a3302a"],honour:["Награды","✦","#a0822a"],record:["Ревизии и записи","¶","#7b6e60"],era:["Эпоха","◇","#9a8e80"]};
+const LANES=[...Object.entries(LINEINFO).map(([k,v])=>[k,v.name,v.c]),["ctx","Эпоха","#9a8e80"]];
+function laneOf(e){return e.l||(e.w!==null&&e.w in D?lineOfPath(e.w):null)||"ctx"}
+const offT=new Set(), offL=new Set(); let hiIdx=-1;
+function chips(){
+ const ft=document.getElementById("ftype"),fl=document.getElementById("fline");ft.innerHTML="";fl.innerHTML="";
+ for(const[k,[lab,ic,c]]of Object.entries(TYPES)){const b=document.createElement("button");b.className="chip"+(offT.has(k)?" off":"");b.innerHTML=`<i style="background:${c}"></i>${lab}`;b.onclick=()=>{offT.has(k)?offT.delete(k):offT.add(k);chron()};ft.append(b)}
+ for(const[k,lab,c]of LANES){const b=document.createElement("button");b.className="chip"+(offL.has(k)?" off":"");b.innerHTML=`<i style="background:${c}"></i>${lab}`;b.onclick=()=>{offL.has(k)?offL.delete(k):offL.add(k);chron()};fl.append(b)}}
+function chron(){
+ chips();
+ const vis=EV.map((e,i)=>({...e,i,lane:laneOf(e)})).filter(e=>!offT.has(e.t)&&!offL.has(e.lane));
+ // track
+ const svg=document.getElementById("track");svg.innerHTML="";const W=1600,LH=30,X0=180,Y0=24,Y1=Math.floor(Math.min(...EV.map(e=>e.y),1900)/20)*20,Y2=Math.max(2030,...EV.map(e=>e.y+10));
+ const H=Y0+LANES.length*LH+30;svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+ const xOf=y=>X0+(y-Y1)/(Y2-Y1)*(W-X0-20);
+ for(let y=Y1;y<=Y2-10;y+=20){svg.appendChild(el("line",{x1:xOf(y),x2:xOf(y),y1:Y0-6,y2:H-24,stroke:"#ddd0b6","stroke-width":y%100?1:2}));svg.appendChild(el("text",{x:xOf(y),y:H-6,"text-anchor":"middle",class:"tick"},y))}
+ LANES.forEach(([k,lab,c],r)=>{const y=Y0+r*LH+LH/2;svg.appendChild(el("line",{x1:X0,x2:W-20,y1:y,y2:y,stroke:c,"stroke-opacity":.25,"stroke-width":6,"stroke-linecap":"round"}));
+  const lt=el("text",{x:X0-12,y:y+5,"text-anchor":"end",class:"lane"+(k!=="ctx"?" lk":"")},lab);if(k!=="ctx"){lt.onclick=()=>{showLine(lineSel===k?null:k);document.getElementById("fan").scrollIntoView({behavior:"smooth",block:"start"})}}svg.appendChild(lt)});
+ vis.forEach(e=>{const r=LANES.findIndex(l=>l[0]===e.lane),y=Y0+r*LH+LH/2,x=xOf(e.y),c=TYPES[e.t][2];
+  const g=el("g",{class:"ev",style:`transform-origin:${x}px ${y}px`});const sh=e.t==="death"?el("rect",{x:x-5,y:y-5,width:10,height:10,fill:c,transform:`rotate(45 ${x} ${y})`}):e.t==="marriage"?el("circle",{cx:x,cy:y,r:6.5,fill:"#fff",stroke:c,"stroke-width":3.2}):el("circle",{cx:x,cy:y,r:6.5,fill:c,stroke:"#fff","stroke-width":1.5});
+  const tt=el("title",{},`${e.y}${e.d?" ("+e.d+")":""} – ${e.x}`);g.append(sh,tt);g.onclick=()=>hi(e.i,true);svg.append(g)});
+ // list
+ const ol=document.getElementById("events");ol.innerHTML="";let dec=null;
+ vis.forEach(e=>{const dc=e.y<1800?Math.floor(e.y/100)*100:Math.floor(e.y/10)*10;if(dc!==dec){dec=dc;const h=document.createElement("li");h.className="dec";h.textContent=e.y<1800?`${dc/100+1}-й век`:`${dc}-е`;if(e.y<1800)h.textContent=dc===1700?"XVIII век":"до 1700";ol.append(h)}
+  const li=document.createElement("li");li.className="ev"+(e.i===hiIdx?" hi":"");li.id="ev"+e.i;const[lab,ic,c]=TYPES[e.t];
+  li.innerHTML=`<div class="yr">${e.a?"≈":""}${e.y}<span class="dt">${e.d||""}</span></div><div class="ic" style="background:${c}" title="${lab}">${ic}</div><div class="tx"></div>`;
+  const tx=li.querySelector(".tx");tx.textContent=e.x;
+  if(e.w!==null&&e.w in D){const w=document.createElement("span");w.className="who";w.textContent=relName(e.w);tx.append(" ",w)}
+  if(e.a){const a=document.createElement("span");a.className="ap";a.textContent=" · год примерный";tx.append(a)}
+  li.onclick=()=>{if(e.w!==null&&e.w in D){if(!e.w.startsWith(root)||e.w.length-root.length>11)setRoot("");select(e.w);document.getElementById("fan").scrollIntoView({behavior:"smooth",block:"center"})}};
+  ol.append(li)});
+}
+function hi(i,scroll){hiIdx=i;chron();const li=document.getElementById("ev"+i);if(li&&scroll)li.scrollIntoView({behavior:"smooth",block:"center"})}
+chron();
+
+</script></body></html>
