@@ -1,6 +1,11 @@
 {
   "name": "family-tree-research",
-  "owner": {"name": "valera-commits"},
+  "owner": {
+    "name": "valera-commits"
+  },
+  "metadata": {
+    "description": "Скилл для исследования родословной: архивы и интерактивный веер предков"
+  },
   "plugins": [
     {
       "name": "family-tree-research",
